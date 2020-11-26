@@ -16,7 +16,9 @@ def jwt_authentication():
         pM27Rl61vurfptTb_lwBqKrQxivnwpQCaSiFfSxg73k
         """
         token = authentication.strip()[7:]
+        # token = authentication[7:]
         payload = verify_jwt(token)
+        # if payload is not None and token.startswith('Bearer '):
         if payload is not None:
             g.user_id = payload.get('user_id')
-            g.is_refresh_token = payload.get('refresh',False)
+            g.user_refresh_token = payload.get('is_refresh', False)

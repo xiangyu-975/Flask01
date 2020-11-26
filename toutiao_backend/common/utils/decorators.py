@@ -20,6 +20,12 @@ def login_required(func):
             return {'message': 'Do not use refresh token.'}, 403
         else:
             return func(*args, **kwargs)
+    # 方法2
+    # def wrapper(*args, **kwargs):
+    #     if g.user_id is not None and g.user_refresh_token is False:
+    #         return func(*args, **kwargs)
+    #     else:
+    #         return {'message': 'Invalid token'}, 401
 
     return wrapper
 

@@ -49,7 +49,7 @@ class AuthorizationResource(Resource):
         'put': [set_db_to_read]
     }
 
-    def _generate_tokens(self, user_id):
+    def _generate_tokens(self, user_id, with_refresh_token=True):
         """
         生成token 和refresh_token
         :param user_id: 用户id
@@ -64,13 +64,16 @@ class AuthorizationResource(Resource):
         # 计算有效期的截至日期
         expiry = datetime.utcnow() + timedelta(hours=current_app.config['JWT_EXPIRY_HOURS'])
         token = generate_jwt(payload, expiry)
-        refresh_payload = {
-            'user_id': user_id,
-            'is_refresh': True
-        }
-        # 计算有效时间截止日期
-        refresh_expiry = datetime.utcnow() + timedelta(days=current_app.config['JWT_REFRESH_DAYS'])
-        refresh_token = (refresh_payload, refresh_expiry)
+        if with_refresh_token:
+            refresh_payload = {
+                'user_id': user_id,
+                'is_refresh': True
+            }
+            # 计算有效时间截止日期
+            refresh_expiry = datetime.utcnow() + timedelta(days=current_app.config['JWT_REFRESH_DAYS'])
+            refresh_token = generate_jwt(refresh_payload, refresh_expiry)
+        else:
+            refresh_token = None
         return token, refresh_token
         # method_decorators = {
         #     'post': [set_db_to_write],
