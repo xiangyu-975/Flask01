@@ -49,25 +49,42 @@ class AuthorizationResource(Resource):
         'put': [set_db_to_read]
     }
 
-    def _generate_tokens(self, user_id, with_refresh_token=True):
+    def _generate_tokens(self, user_id):
         """
         生成token 和refresh_token
         :param user_id: 用户id
         :return: token, refresh_token
         """
-        method_decorators = {
-            'post': [set_db_to_write],
-            'put': [set_db_to_read]
-        }
         # 颁发JWT
-        now = datetime.utcnow()
-        expiry = now + timedelta(hours=current_app.config['JWT_EXPIRY_HOURS'])
-        token = generate_jwt({'user_id': user_id, 'refresh': False}, expiry)
-        refresh_token = None
-        if with_refresh_token:
-            refresh_expiry = now + timedelta(days=current_app.config['JWT_REFRESH_DAYS'])
-            refresh_token = generate_jwt({'user_id': user_id, 'refresh': True}, refresh_expiry)
+        # 生成接口调用的2小时token
+        # def generate_jwt(payload,expiry,secret=None)
+        payload = {
+            'user_id': user_id,
+        }
+        # 计算有效期的截至日期
+        expiry = datetime.utcnow() + timedelta(hours=current_app.config['JWT_EXPIRY_HOURS'])
+        token = generate_jwt(payload, expiry)
+        refresh_payload = {
+            'user_id': user_id,
+            'is_refresh': True
+        }
+        # 计算有效时间截止日期
+        refresh_expiry = datetime.utcnow() + timedelta(days=current_app.config['JWT_REFRESH_DAYS'])
+        refresh_token = (refresh_payload, refresh_expiry)
         return token, refresh_token
+        # method_decorators = {
+        #     'post': [set_db_to_write],
+        #     'put': [set_db_to_read]
+        # }
+        # # 颁发JWT
+        # now = datetime.utcnow()
+        # expiry = now + timedelta(hours=current_app.config['JWT_EXPIRY_HOURS'])
+        # token = generate_jwt({'user_id': user_id, 'refresh': False}, expiry)
+        # refresh_token = None
+        # if with_refresh_token:
+        #     refresh_expiry = now + timedelta(days=current_app.config['JWT_REFRESH_DAYS'])
+        #     refresh_token = generate_jwt({'user_id': user_id, 'refresh': True}, refresh_expiry)
+        # return token, refresh_token
 
     def post(self):
         """
